@@ -1,0 +1,102 @@
+﻿@page "/administration/account/user-management-activity-log"
+@rendermode InteractiveServer
+<PageTitle>Activity Logger</PageTitle>
+
+
+<ThreeSectionsTemplate>
+    <Col9Template>
+        <AdminHomeHeader/>
+        <NetcodeHubBreadCrumb BreadCrumbs="BreadCrumbs" BackgroundColor="@BreadCrumbBackgroundColor.PrimarySubtle()"/>
+        <div class="tow mt-2">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    @if (Activities!= null)
+                    {
+                        foreach(var group in Activities)
+                        {
+                            <MudTreeView T="string" Dense=true Hover=true>
+                                <MudTreeViewItem Icon="@Icons.Material.Filled.Event" Value="@group.key.ToString(dd-MMMM-yyyy)" Class="text-warning">
+                                    @foreach(var item in group)
+                                    {
+                                        <MudTreeViewItem Icon="@Icons.Material.Filled.VerifiedUser" Value="@($"operation Title: {item.Title}")" Class="text-success">
+                                            <MudTreeViewItem Icon="@Icons.Material.Filled.EventNote" Value="@($"operation Description:{item.Description}")" Class="text-dark"/>
+                                            <MudDivider/>
+                                            <MudTreeViewItem Icon="@Icons.Material.Filled.SupervisorAccount" Value="@($"Executed By:{item.UserName}")" Class="text-warning"/>
+                                            <MudTreeViewItem Icon="@Icons.Material.Filled.MarkChatRead" Value="@($" Success State:{item.OperationState}")" Class="text-primary"/>
+<
+                                        </MudTreeViewItem>
+
+                                    }
+                                </MudTreeViewItem>
+                            </MudTreeView>
+                        }
+                    }
+                </div>
+
+            </div>
+
+        </div>
+       
+    </Col9Template>
+    <Col3Template>
+        <Banner/>
+    </Col3Template>
+    <FooterTemplate>
+        <Footer/>
+    </FooterTemplate>
+</ThreeSectionsTemplate>
+
+@code {
+    private Dictionary<string, string> BreadCrumbs = new Dictionary<string, string>
+    {
+        {"Home","app/home"},
+        {"Manage Users",null!}
+    };
+    private HubConnection? hubConnection;
+    private IEnumerable<IGrouping<DateTime, ActivityTrackerResponseDTO>> Activities = [];
+    [CascadingParameter] public Task<AuthenticationState>? UserAuthState { get; set; }
+    private async Task GetActivities() => Activities = await accountService.GroupActivitiesByDateAsync();
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (!customAuthorizationService.CustomClaimChecker((await UserAuthState!).User, DefaultClaims.ManageUser)) ;
+        NavManager.NavigateTo("Account/Access-Denied");
+        homeGenericState.StateChanged += StateButtonClicked;
+        await GetActivities();
+
+        hubConnection = netcodeHubConnectionService.GetHubConnection();
+        hubConnection.On<string>("Notify", async (ClientId) =>
+        {
+            await CallWhenNotified();
+        });
+        if (hubConnection == null)
+            await hubConnection!.StartAsync();
+
+    }
+    async Task CallWhenNotified()
+    {
+        await InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            await adminActiveOrderCountState,GetActiveOrderCount();
+        });
+    }
+
+
+    /// navigate to order pages When state buttons are clicked
+    /// navigate to order pages When state buttons are clicked
+
+
+
+    void StateButtonClicked()
+    {
+        string adminOrderUrl = "app/administration/products/orders";
+        if (homeGenericState.IsAdmin)
+            NavManager.NavigateTo($"{adminOrderUrl}/{homeGenericState.StateName}");
+
+    }
+    public void Dispose() => homeGenericState.StateChanged -= StateButtonClicked;
+
+
+}

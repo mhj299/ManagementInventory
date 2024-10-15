@@ -1,0 +1,11 @@
+﻿@using Application.Service
+@using Microsoft.AspNetCore.Authorization
+@using WebUi.Components.Layout.Identity
+@using System.Security.Claims
+@layout AuthentificationLayout
+@attribute [AllowAnonymous]
+@inject IAccountService accountService
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavManager
+@using Application.DTO.Request.Identity
+@using Microsoft.AspNetCore.Authorization

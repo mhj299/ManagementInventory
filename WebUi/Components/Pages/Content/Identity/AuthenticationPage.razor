@@ -1,0 +1,32 @@
+﻿<h3>AuthenticationPage</h3>
+@page "/"
+@using Application.Service
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavManager
+@inject IAccountService accountService
+@code {
+    [CascadingParameter]
+    public Task<AuthenticationState>? ClientAuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await accountService.SetUpAsync();
+            var authState = await ClientAuthState!;
+            if (authState.User.Identity!.IsAuthenticated)
+            {
+                NavManager.NavigateTo("app/home", false, true);
+            }
+            else
+            {
+                NavManager.NavigateTo("Account/Login", false, true);
+            }
+        }
+        catch
+        {
+            NavManager.NavigateTo("Account/Login", false, true);
+        }
+    }
+}
+

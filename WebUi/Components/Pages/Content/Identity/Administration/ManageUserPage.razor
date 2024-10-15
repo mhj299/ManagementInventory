@@ -1,0 +1,254 @@
+﻿@page "/administration/account/users/manage"
+@rendermode InteractiveServer
+<PageTitle>Manage User</PageTitle>
+
+<TwoSectionsTemplate>
+    <Col12Template>
+        <AdminHomeHeader/>
+            <NetcodeHubBreadCrumb BreadCrumbs="BreadCrumbs" BackgroundColor="@BreadCrumbBackgroundColor.SecondarySubtle()" />
+            <div class="row mt-3">
+                @if( Users != null)
+                {
+                    @foreach(var user in Users)
+                    {
+                        var userTemp=user;
+                        <div class="col-auto mn-3">
+                            <div class="card border-success shadow-lg">
+                                <div class="card-body">
+                                    <MudTreeView T="string" Dense=true Class="text-primary">
+                                        <MudTreeView Icon="@Icons.Material.Filled.SupervisedUserCircle" Value ="@user.Name" Class="text-primary"> 
+                                            <MudTreeView Icon="@Icons.Material.Filled.VerifiedUser" Value="@($"Role: {user.RoleName}")" Class="text-success"/>
+                                            <MudTreeView Icon="@Icons.Material.Filled.Email" Value="@($"Email:{user.Email}")" Class="text-dark"/>
+                                            <MudTreeView Icon="@Icons.Material.Filled.Create" Value="@($"Create:{user.Create}")" Class="text-warning"/>
+                                            <MudTreeView Icon="@Icons.Material.Filled.Edit" Value="@($"Update:{user.Update}")" Class="texr-text-info"/>
+                                            <MudTreeView Icon="@Icons.Material.Filled.Delete" Value="@($"Delete:{user.Delete}")" Class="text-danger"/>
+                                            <MudTreeView Icon="@Icons.Material.Filled.List" Value="@($"Read:{user.Read}")" Class="text-success-emphasis"/>
+                                            <MudTreeView Icon="@Icons.Material.Filled.SettingsInputComponent" Value="@($"User Management:{user.ManageUser}")" Class="text-primary"/>
+                                            <MudDivider/>
+                                            <button class="btn text-info nav-link float-end btn-sm" @onclick="() => ManageUserClicked(user)">
+                                                <i class="mdi mdi-pencil">Edit</i>
+                                            </button>
+                                        </MudTreeView>
+
+                                    </MudTreeView>
+                                </div>
+                                <div class="card-footer">
+                                </div>
+                                </div>
+                            </div>
+                    }
+                }
+            </div>
+
+
+            <Modal @bind-Open="IsOpen" BootstrapClass="border-info rounded p-2 ml-2 align-item-center position-absolute top-50 translate-middle" CustomStyle="width:300px">
+                <ContentContent>
+                    <div class="card p-3 shadow-lg border-success">
+                        <div class="card-title text-center text-info d-flex justify-content-between">
+                            <i class="d-flex mdi mdi-pencil text-primary fs-3"></i>
+                            <span class="d-flex">Manage Permissions</span>
+                            <i class="mdi mdi-close text-danger fw-bold menu-icon fs-3 d-flex" style="cursor:pointer" @onclick="CloseModalDialog"></i>
+
+                        </div>
+                        <div class="card-body">
+                            <h5>@ChangeUserClaim.Name</h5>
+                            <EditForm Model="ChangeUserClaim" OnInvalidSubmit="SaveChanges">
+                                <DataAnnotationsValidator/>
+                                <div class="form-group mt-3">
+                                    <label class="form-label">Create</label>
+                                    <InputSelect @bind-Value="ChangeUserClaim.Create" class="form-select">
+                                        @if (ChangeUserClaim.Create)
+                                        {
+                                            <option selected value="true">True</option>
+                                            <option value="false">False</option>
+                                        }
+                                        else
+                                        {
+
+                                            <option selected value="false">False</option>
+                                            <option value="true">True</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label class="form-label">Update</label>
+                                    <InputSelect @bind-Value="ChangeUserClaim.Update" class="form-select mb-3">
+                                        @if (ChangeUserClaim.Update)
+                                        {
+
+                                            <option selected value="true">True</option>
+                                            <option value="false">False</option>
+                                        } else
+                                        {
+                                            <option selected value="false">False</option>
+                                            <option value="true">True</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label class="form-label">Delete</label>
+                                    <InputSelect @bind-Value="ChangeUserClaim.Delete" class="form-select">
+                                        @if (ChangeUserClaim.Delete)
+                                        {
+                                            <option selected value="true">True</option>
+                                            <option value="false">False</option>
+                                        }
+                                        else
+                                        {
+
+                                            <option selected value="false">False</option>
+                                            <option value="true">True</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label class="form-label">Read</label>
+                                    <InputSelect @bind-Value="ChangeUserClaim.Read" class="form-select">
+                                        @if (ChangeUserClaim.Read)
+                                        {
+                                            <option selected value="true">True</option>
+                                            <option value="false">False</option>
+                                        }
+                                        else
+                                        {
+
+                                            <option selected value="false">False</option>
+                                            <option value="true">True</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label class="from-label ">Role </label>
+                                    @if (Roles != null && !string.IsNullOrEmpty(ChangeUserClaim.RoleName))
+                                    {
+                                        <InputSelect @bind-Value="ChangeUserClaim.RoleName" class="form-select mb-3">
+                                            @{
+                                            string roleName = "";
+                                        }
+                                        @if (ChangeUserClaim.UserName.Equals(Policy.RoleClaim.Admin))
+                                        {
+                                            roleName = Policy.RoleClaim.Admin;
+                                            <option selected value="admin">@Policy.RoleClaim.Admin</option>
+                                        }
+                                        else if (ChangeUserClaim.RoleName.Equals(Policy.RoleClaim.Manager))
+                                        {
+                                            roleName = Policy.RoleClaim.Manager;
+                                            <option selected value="Manager">@Policy.RoleClaim.Manager</option>
+
+                                        }
+                                        else
+                                        {
+                                            roleName = Policy.RoleClaim.User;
+                                            <option selected value="User">@Policy.RoleClaim.User</option>
+                                        }
+                                        @foreach (var role in Roles)
+                                        {
+                                                if (!role.Equals(roleName)) 
+                                        {
+                                            <option value="@role">@role</option>
+                                        }
+                                        
+                                    }
+
+                               </InputSelect>
+                            }
+                            </div>
+                            
+                              <div class="form-group mt-3">
+                                  <label class="form-label">Manage User</label>
+                                  <InputSelect @bind-Value="ChangeUserClaim.ManageUser" class="form-select mb-3">
+                                        @if (ChangeUserClaim.ManageUser)
+                                        {
+                                            <option selected value="true">True</option>
+                                            <option selected value="false">False</option>
+
+                                        }
+                                        else
+                                        {
+                                            <option selected value="false">False</option>
+                                            <option selected value="true">True</option>
+                                        }
+                                    </InputSelect>
+                                    </div>
+                                </div>
+                                <div class="form-group mt-3">
+                                    @if (Loading)
+                                      {
+                                <GenericSpinnerButton  ButtonClass="btn btn-info btn-sm float-end" Text="Saving...."/>
+                            }
+                            else
+                            {
+                                <button class="btn btn-info float-end btn-sm" type="submit">Save</button>
+                            }
+                        </div>
+                        <ValidationSummary/>
+                            </EditForm>
+                        </div>
+
+                    </div>
+                </ContentContent>
+            </Modal> 
+
+
+           <NetcodeHubToast Duration="2000" IconClass="mdi mdi-content-duplicate menu-icon fs-4 "@ref="ToastComponent"/>
+
+
+        
+    </Col12Template>
+    <FooterTemplate><Footer /></FooterTemplate>
+</TwoSectionsTemplate>
+
+@code {
+    private Dictionary<string, string> BreadCrumbs = new Dictionary<string, string>
+    {
+        {"Home","app/home"},
+        {"Manage Users",null!}
+    };
+    private HubConnection? hubConnection;
+    private IEnumerable<IGrouping<DateTime, ActivityTrackerResponseDTO>> Activities = [];
+    [CascadingParameter] public Task<AuthenticationState>? UserAuthState{ get; set; }
+    private async Task GetActivities()=> Activities=await accountService.GroupActivitiesByDateAsync();
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (!customAuthorizationService.CustomClaimChecker((await UserAuthState!).User, DefaultClaims.ManageUser)) ;
+        NavManager.NavigateTo("Account/Access-Denied");
+        homeGenericState.StateChanged += StateButtonClicked;
+        await GetActivities();
+
+        hubConnection=netcodeHubConnectionService.GetHubConnection();
+        hubConnection.On<string>("Notify", async (ClientId) =>
+        {
+            await CallWhenNotified();
+        });
+        if (hubConnection == null)
+            await hubConnection!.StartAsync();
+
+    }
+    async Task CallWhenNotified()
+    {
+        await InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            await adminActiveOrderCountState,GetActiveOrderCount();
+        });
+    }
+
+
+    /// navigate to order pages When state buttons are clicked 
+    /// navigate to order pages When state buttons are clicked    
+
+
+
+    void StateButtonClicked()
+    {
+        string adminOrderUrl="app/administration/products/orders";
+        if(homeGenericState.IsAdmin)
+            NavManager.NavigateTo($"{adminOrderUrl}/{homeGenericState.StateName}");
+
+    }
+    public void Dispose() => homeGenericState.StateChanged -= StateButtonClicked;
+
+}
+ 

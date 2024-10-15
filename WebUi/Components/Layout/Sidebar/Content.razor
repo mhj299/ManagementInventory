@@ -1,0 +1,101 @@
+﻿@using Application.DTO.Request.Identity
+@using WebUi.Components.Layout.Identity
+<AuthorizeVIew>
+    <li class="nav_item mt-5">
+        <a class="mdi mdi-home menu-icon">
+            <i class="menu-title">Home</i>
+        </a>
+    </li>
+</AuthorizeVIew>
+<AuthorizeView Policy ="AdministrationPolicy">
+    @if (CanManageUser)
+    {
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#expand-user"aria-expanded="false"aria-controls="ui-basic">
+                <i class="mdi mdi-account-settings menu-icon fs-4">
+                    <span class="menu-title">User Management</span>
+                    <i class="menu-arrow"></i>
+                </i>
+            </a>
+            <div class="collapse" id="expand-user">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" href="administration/account/create-yser">Add</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="adminitration/account/users/manage">Manage</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="adminitration/account/user-management-activity-log">Activity Log</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </li>
+    }
+    <li class="nav-item">
+        <a class="nav-link " data-toggle="collapse" href="#expand-prodcut" aria-expanded="false" aria-controls="ui-basic">
+            <i class="mdi mdi-cube menu-icon fs-4"></i>
+            <span class="menu-title">Product Management</span>
+            <i class="menu-arrow"></i>
+        </a>
+        <div class="collapse" id="expand-product">
+            <ul class="nav flex-column sub-menu">
+                <li class="nav-item">
+                   <a class="nav-link" href="app/products/manage">Products</a>
+
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="app/products/category/manage">Category</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="app/products/location/manage">Locations</a>
+                </li>
+            </ul>
+        </div>
+    </li>
+    @*Admin Orders*@
+    <li class="nav-item">
+        <a class="nav-link" href="app/administration/products/orders">
+            <i class="mdi mdi-cube-unfold menu-icon"></i>
+               <span class="menu-title"> Orders</span>
+            </a>
+    </li>
+
+</AuthorizeView>
+<AuthorizeView Policy="@Policy.UserPolicy">
+    @*Client Orders*@
+    <li class="nav-item">
+        <a class="nav-link" href="app/products/orders">
+            <i class="mdi mdi-cube-unfolded menu-icon" ></i>
+            <span class="menu-title">My Orders</span>
+            </a>
+    </li>
+    </AuthorizeView>
+    <AuthorizeView>
+        <MudBlazor.MudDivider Class="mt-5"/>
+        <li class="nav-item sidebar-actions">
+            <div>
+                <div>
+                <div class="border-none">
+                    <p class="text-black">System Info</p>
+                </div>
+                <ul class="mt-4 pl-0">
+                    <li>
+                        <a>version 1.0.0</a>
+                    </li>
+                </ul>
+            </div>
+            </div>
+            
+        </li>
+
+    </AuthorizeView>
+@code{
+    [CascadingParameter]public Task<AuthentificationState>? myState {get;set;}
+    bool CanManageUser=false;
+    protected async override Task OnInitializedAsync()
+    {
+        CanManageUser=CustomAuthorizationService.CustomClaimChecker((await myState!).User, DefaultClaims.ManageUser);
+    }
+}
